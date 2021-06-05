@@ -36,7 +36,11 @@
       class="modal"
     >
       <h1
-        class="title is-size-1 has-text-centered has-text-weight-bold has-text-white"
+        class="
+          title
+          is-size-1
+          has-text-centered has-text-weight-bold has-text-white
+        "
       >
         {{ modalText }}
       </h1>
@@ -47,7 +51,7 @@
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 300px; height: 300px;"
+        style="width: 300px; height: 300px"
         loop
         autoplay
       ></lottie-player>
@@ -57,7 +61,7 @@
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 300px; height: 300px;"
+        style="width: 300px; height: 300px"
         loop
         autoplay
       ></lottie-player>
@@ -67,7 +71,7 @@
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 300px; height: 300px;"
+        style="width: 300px; height: 300px"
         loop
         autoplay
       ></lottie-player>
@@ -100,9 +104,8 @@ import { MOMINT_CONTRACT_ADDRESS } from '~/constants'
 
 export default {
   components: { LottiePlayer },
-  middleware({ redirect, $connector }) {
-    console.log($connector)
-    if (!$connector.connected) {
+  middleware({ redirect, $web3 }) {
+    if (!$web3.currentProvider.connected) {
       redirect('/')
     }
   },
@@ -223,6 +226,7 @@ export default {
       // if (!this.selectedAccount) {
       //   return alert('You must connect to MetaMask')
       // }
+
       console.log(this.momint)
       const mint = await this.momint.methods
         .mint(metadata.url)

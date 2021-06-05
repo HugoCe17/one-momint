@@ -24,14 +24,13 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: '~/plugins/walletconnect.js', mode: 'client' },
     { src: '~/plugins/web3', mode: 'client' },
     { src: '~/plugins/nft-storage-client', mode: 'client' },
     { src: '~/plugins/nft-storage-file', mode: 'client' },
     { src: '~/plugins/camera.js', mode: 'client' },
     { src: '~/plugins/vue-particles.js', mode: 'client' },
     { src: '~/plugins/typeit.js', mode: 'client' },
-    { src: '~/plugins/walletconnect.js', mode: 'client' },
+    { src: '~/plugins/vuex-persist', mode: 'client' },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

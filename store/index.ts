@@ -1,17 +1,9 @@
 import { ActionTree, MutationTree } from 'vuex'
 import ENS, { getEnsAddress } from '@ensdomains/ensjs'
-import WalletConnectProvider from '@walletconnect/web3-provider'
+import VuexPersistence from 'vuex-persist'
 
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
-const provider = new WalletConnectProvider({
-  infuraId: '07c05b5d099c4ad5b5d71ce38fc010e3', // Required
-})
 
-// Workaround for issue reported here: https://github.com/ChainSafe/web3.js/issues/3891
-/* eslint-disable no-proto  */
-delete provider.__proto__.request
-/* eslint-disable no-prototype-builtins */
-provider.hasOwnProperty('request')
 const stringifyState = (state: any) => {
   return JSON.stringify({ ...state })
 }
@@ -39,6 +31,10 @@ export const getDefaultState = () => ({
 })
 
 export type RootState = ReturnType<typeof state>
+
+const vuexLocal = new VuexPersistence<RootState>({
+  storage: window.localStorage,
+})
 
 export const mutations: MutationTree<RootState> = {
   recoverStateFromStorage(state, selectedAccount) {
@@ -81,9 +77,11 @@ export const actions: ActionTree<RootState, RootState> = {
     console.log(address)
 
     const ens = await new ENS({
-      provider,
+      provider: this.app.$web3.currentProvider,
       ensAddress: getEnsAddress(4),
     })
+
+    console.log({ ENS: await ens.getName(address) })
 
     const ensName = await ens.getName(address)
     const checked = await ens.name(ensName.name).getAddress()
@@ -93,8 +91,10 @@ export const actions: ActionTree<RootState, RootState> = {
       commit('setSelectedAccountEnsName', ensName.name)
     }
   },
-  connectToWallet() {
-    const { accounts, chainId, connected } = this.app.$connector
+  async connectToWallet() {
+    const { accounts, chainId, connected } = await this.app.$web3
+      .currentProvider
+    console.log('CONNECTED ?: ', connected)
     if (connected && chainId !== 4) {
       return Snackbar.open({
         message: 'Please connect to Rinkeby',
@@ -106,21 +106,31 @@ export const actions: ActionTree<RootState, RootState> = {
     if (connected && accounts[0]) {
       return Snackbar.open({
         actionText: 'OK',
-        message: `Connected as: \n\n ${accounts[0]}`,
+        message: `Connected as: \n\n ${accounts[0]} chainId: ${chainId}`,
         type: 'is-success',
         position: 'is-top',
         duration: 6000,
         queue: false,
       })
     }
-    if (!this.app.$connector.connected) {
-      this.app.$connector.createSession()
+
+    try {
+      if (!this.app.$web3.currentProvider.connected) {
+        console.log(
+          'Setting provider',
+          await this.app.$web3.currentProvider.enable()
+        )
+      }
+    } catch (error) {
+      console.error(error)
     }
   },
   disconnectWallet() {
-    if (this.app.$connector.connected) {
-      console.log('KILL_SESSION')
-      this.app.$connector.killSession()
+    if (this.app.$web3.currentProvider.connected) {
+      console.log('DISCONNECT')
+      this.app.$web3.currentProvider.disconnect()
     }
   },
 }
+
+export const plugins = [vuexLocal.plugin]

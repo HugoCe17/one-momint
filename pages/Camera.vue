@@ -231,7 +231,7 @@ export default {
       const mint = await this.momint.methods
         .mint(metadata.url)
         .send(
-          { from: await this.$web3.currentProvider.wc.accounts[0] },
+          { from: await this.$web3.currentProvider.accounts[0] },
           async (error, result) => {
             if (!error) {
               console.log(result)

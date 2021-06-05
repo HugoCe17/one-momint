@@ -55,19 +55,12 @@ export default {
   computed: { ...mapState(['nftCollection', 'selectedAccount']) },
 
   watch: {
-    selectedAccount(newAcc) {
-      this.$store.commit('recoverStateFromStorage', newAcc)
-    },
     nftCollection(newCollection) {
       this.images = newCollection
     },
   },
 
   mounted() {
-    if (this.selectedAccount) {
-      this.$store.commit('recoverStateFromStorage', this.selectedAccount)
-    }
-
     setTimeout(() => this.$refs.grid && this.$refs.grid.update(), 500)
   },
 }

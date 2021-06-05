@@ -37,12 +37,6 @@ const vuexLocal = new VuexPersistence<RootState>({
 })
 
 export const mutations: MutationTree<RootState> = {
-  recoverStateFromStorage(state, selectedAccount) {
-    Object.assign(
-      state,
-      JSON.parse(String(localStorage.getItem(selectedAccount)))
-    )
-  },
   resetState(state) {
     Object.assign(state, getDefaultState())
   },
@@ -91,7 +85,9 @@ export const actions: ActionTree<RootState, RootState> = {
       commit('setSelectedAccountEnsName', ensName.name)
     }
   },
-  async connectToWallet() {
+  async connectToWallet(context) {
+    console.log('CONTEXT: ', context)
+    console.log('THIS_CONTEXT: ', this)
     const { accounts, chainId, connected } = await this.app.$web3
       .currentProvider
     console.log('CONNECTED ?: ', connected)
@@ -116,10 +112,8 @@ export const actions: ActionTree<RootState, RootState> = {
 
     try {
       if (!this.app.$web3.currentProvider.connected) {
-        console.log(
-          'Setting provider',
-          await this.app.$web3.currentProvider.enable()
-        )
+        console.log('Setting provider')
+        await this.app.$web3.currentProvider.enable()
       }
     } catch (error) {
       console.error(error)

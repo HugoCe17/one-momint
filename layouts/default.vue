@@ -40,7 +40,7 @@ export default {
     selectedAccount: {
       immediate: true,
       async handler(newAccount) {
-        const { accounts, chainId, connected } = this.$web3.currentProvider.wc
+        const { accounts, chainId, connected } = this.$web3.currentProvider
         if (connected && accounts && chainId) {
           this.setSelectedAccount(accounts[0])
           await this.$store.dispatch('reverseResolveAddress', newAccount)
@@ -50,7 +50,7 @@ export default {
     chainId: {
       immediate: true,
       async handler(newChainId) {
-        const { accounts, chainId, connected } = this.$web3.currentProvider.wc
+        const { accounts, chainId, connected } = this.$web3.currentProvider
         if (connected && accounts && chainId) {
           this.setChainId(newChainId)
           await this.$store.dispatch('reverseResolveAddress', accounts[0])

@@ -5,7 +5,7 @@ import detectEthereumProvider from '@metamask/detect-provider'
 
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
 
-export const resetWalletConnector = (connector: WalletConnectConnector) => {
+export const resetWalletConnector = (connector: any) => {
   if (connector && connector.walletConnectProvider?.wc?.uri) {
     connector.walletConnectProvider = undefined
   }

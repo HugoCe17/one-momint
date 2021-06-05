@@ -36,11 +36,7 @@
       class="modal"
     >
       <h1
-        class="
-          title
-          is-size-1
-          has-text-centered has-text-weight-bold has-text-white
-        "
+        class="title is-size-1 has-text-centered has-text-weight-bold has-text-white"
       >
         {{ modalText }}
       </h1>
@@ -51,7 +47,7 @@
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 300px; height: 300px"
+        style="width: 300px; height: 300px;"
         loop
         autoplay
       ></lottie-player>
@@ -61,7 +57,7 @@
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 300px; height: 300px"
+        style="width: 300px; height: 300px;"
         loop
         autoplay
       ></lottie-player>
@@ -71,7 +67,7 @@
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 300px; height: 300px"
+        style="width: 300px; height: 300px;"
         loop
         autoplay
       ></lottie-player>
@@ -274,9 +270,8 @@ export default {
 </script>
 
 <style scoped>
-video,
-canvas {
-  width: 100%;
+video {
+  width: 100vw;
   min-height: 100vh;
   margin: 0 auto;
   position: fixed;
@@ -285,6 +280,14 @@ canvas {
   -moz-transform: scaleX(-1) rotateY(180deg);
   -o-transform: scaleX(-1) rotateY(180deg);
   transform: scaleX(-1) rotateY(180deg);
+}
+
+canvas {
+  min-height: 100vh;
+  width: 100vw;
+  position: absolute;
+  object-fit: cover;
+  margin: auto;
 }
 
 .buttons {

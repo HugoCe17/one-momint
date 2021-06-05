@@ -1,8 +1,8 @@
 <template>
   <div>
     <section class="main-content">
-      <navbar />
-      <div class="container column is-10">
+      <navbar v-if="$route.name !== 'Camera'" />
+      <div>
         <nuxt />
       </div>
     </section>
@@ -33,63 +33,73 @@ export default {
   },
 
   computed: {
-    ...mapState(['isConnectDisabled', 'selectedAccount', 'chainId']),
+    ...mapState(['selectedAccount', 'chainId']),
   },
 
   watch: {
-    async selectedAccount(newAccount, oldAccount) {
-      if (newAccount !== oldAccount) {
-        await this.$store.dispatch('reverseResolveAddress', newAccount)
-      }
+    selectedAccount: {
+      immediate: true,
+      async handler(newAccount, oldAccount) {
+        const { accounts, chainId, connected } = this.$connector
+        if (newAccount !== oldAccount && connected && accounts && chainId) {
+          this.setSelectedAccount(accounts[0])
+          await this.$store.dispatch('reverseResolveAddress', newAccount)
+          await this.$connector.updateSession({
+            accounts,
+            chainId,
+          })
+        }
+      },
+    },
+    chainId: {
+      immediate: true,
+      async handler(newChainId, oldChainId) {
+        const { accounts, chainId, connected } = this.$connector
+        if (newChainId !== oldChainId && connected && accounts && chainId) {
+          this.setSelectedAccount(accounts[0])
+          await this.$store.dispatch('reverseResolveAddress', accounts[0])
+          await this.$connector.updateSession({
+            accounts,
+            chainId: newChainId,
+          })
+        }
+      },
     },
   },
 
-  async mounted() {
-    const { ethereum } = window
-
-    if (ethereum) {
-      if (!this.selectedAccount) {
-        const accounts = await ethereum.request({
-          method: 'eth_accounts',
-        })
-
-        if (accounts && accounts.length) {
-          this.setSelectedAccount(accounts[0])
-        }
+  mounted() {
+    this.$connector.on('connect', (error, payload) => {
+      if (error) {
+        return console.error(error)
       }
+      console.log('CONNECTED: ', payload)
+      const { accounts, chainId } = payload.params[0]
+      this.setSelectedAccount(accounts[0])
+      this.setChainId(chainId)
+    })
 
-      if (!this.chainId && ethereum.chainId) {
-        this.setChainId(ethereum.chainId)
+    this.$connector.on('session_update', (error, payload) => {
+      if (error) {
+        return console.error(error)
       }
+      console.log('SESSION_UPDATED: ', payload)
+      const { accounts, chainId } = payload.params[0]
+      this.setSelectedAccount(accounts[0])
+      this.setChainId(chainId)
+    })
 
-      ethereum.on('accountsChanged', (accounts) => {
-        this.setSelectedAccount(accounts[0] || null)
-      })
-
-      ethereum.on('connect', ({ chainId }) => {
-        this.setChainId(chainId)
-      })
-
-      ethereum.on('chainChanged', (chainId) => {
-        console.log('CHAIN_CHANGED: ', chainId)
-        this.$router.go()
-      })
-
-      ethereum.on('disconnect', (error) => {
-        if (error) {
-          console.error(error)
-        }
-      })
-    } else {
-      alert('MetaMask not found')
-    }
+    this.$connector.on('disconnect', () => {
+      this.setSelectedAccount(null)
+      this.setChainId(null)
+      this.setSelectedAccountEnsName(null)
+      this.$router.go(0)
+    })
   },
 
   methods: {
     ...mapMutations([
       'setChainId',
       'setSelectedAccount',
-      'recoverStateFromStorage',
       'setSelectedAccountEnsName',
       'disableConnectButton',
       'resetState',

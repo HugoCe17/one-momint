@@ -14,7 +14,6 @@ const syncStateToStorage = (state: any) => {
 }
 
 export const state = () => ({
-  isConnectDisabled: false,
   selectedAccount: null,
   selectedAccountEnsName: null,
   chainId: null,
@@ -23,7 +22,6 @@ export const state = () => ({
 })
 
 export const getDefaultState = () => ({
-  isConnectDisabled: false,
   selectedAccount: null,
   selectedAccountEnsName: null,
   chainId: null,
@@ -45,9 +43,6 @@ export const mutations: MutationTree<RootState> = {
   },
   setChainId(state, id) {
     state.chainId = id
-  },
-  disableConnectButton(state, bStatus) {
-    state.isConnectDisabled = bStatus
   },
   setSelectedAccount(state, selectedAccount) {
     state.selectedAccount = selectedAccount
@@ -72,7 +67,7 @@ export const mutations: MutationTree<RootState> = {
 
 export const actions: ActionTree<RootState, RootState> = {
   async reverseResolveAddress({ commit }, address) {
-    if (!address) return
+    if (!address) return commit('setSelectedAccountEnsName', null)
 
     console.log(address)
 
@@ -89,14 +84,9 @@ export const actions: ActionTree<RootState, RootState> = {
       commit('setSelectedAccountEnsName', ensName.name)
     }
   },
-  async connectToWallet({ commit }) {
-    const { ethereum } = window
-
-    if (!ethereum) {
-      return alert('MetaMask was not found to be installed.')
-    }
-
-    if (ethereum.networkVersion !== String(4)) {
+  connectToWallet() {
+    const { accounts, chainId, connected } = this.app.$connector
+    if (connected && chainId !== 4) {
       return Snackbar.open({
         message: 'Please connect to Rinkeby',
         type: 'is-warning',
@@ -104,32 +94,24 @@ export const actions: ActionTree<RootState, RootState> = {
       })
     }
 
-    if (ethereum.selectedAddress) {
+    if (connected && accounts[0]) {
       return Snackbar.open({
         actionText: 'OK',
-        message: `Connected as: \n\n ${ethereum.selectedAddress}`,
+        message: `Connected as: \n\n ${accounts[0]}`,
         type: 'is-success',
         position: 'is-top',
         duration: 6000,
         queue: false,
       })
     }
-
-    commit('disableConnectButton', true)
-
-    try {
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts',
-      })
-
-      if (accounts && accounts.length) {
-        commit('setSelectedAccount', accounts[0])
-        commit('disableConnectButton', true)
-      }
-    } catch (error) {
-      console.error(error)
-    } finally {
-      commit('disableConnectButton', false)
+    if (!this.app.$connector.connected) {
+      this.app.$connector.createSession()
+    }
+  },
+  disconnectWallet() {
+    if (this.app.$connector.connected) {
+      console.log('KILL_SESSION')
+      this.app.$connector.killSession()
     }
   },
 }

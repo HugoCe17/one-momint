@@ -25,6 +25,13 @@
       <b-navbar-item tag="div">
         <div class="buttons">
           <b-button
+            v-if="$connector.connected"
+            class="is-secondary is-small"
+            @click="$store.dispatch('disconnectWallet')"
+          >
+            Disconnect
+          </b-button>
+          <b-button
             :type="selectedAccount ? 'is-secondary' : 'is-primary'"
             @click="$store.dispatch('connectToWallet')"
             >{{ cBtnLabel }}</b-button
@@ -35,7 +42,7 @@
             tag="nuxt-link"
             to="/Camera"
           >
-            <strong>Camera</strong>
+            <strong>Launch App</strong>
           </b-button>
         </div>
       </b-navbar-item>

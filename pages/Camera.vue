@@ -29,11 +29,11 @@
       </b-icon>
     </div>
     <b-modal
+      ref="modal"
+      v-model="isModal"
       :on-cancel="modalClosedEvent"
       :can-cancel="['x']"
       class="modal"
-      ref="modal"
-      v-model="isModal"
     >
       <h1
         class="
@@ -98,19 +98,18 @@
 <script>
 import { mapState } from 'vuex'
 import LottiePlayer from '@lottiefiles/lottie-player'
-import {
-  Client,
-  ThreadID,
-  KeyInfo,
-  PrivateKey,
-  WithKeyInfoOptions,
-} from '@textile/hub'
+
 import momintABI from '~/contracts/ABI/ERC721.json'
 import { MOMINT_CONTRACT_ADDRESS } from '~/constants'
 
 export default {
   components: { LottiePlayer },
-  layout: 'camera',
+  middleware({ redirect, $connector }) {
+    console.log($connector)
+    if (!$connector.connected) {
+      redirect('/')
+    }
+  },
   data() {
     return {
       camera: null,
@@ -123,7 +122,6 @@ export default {
       client: '',
       isLoading: true,
       threadId: '',
-      ipfsGateway: 'https://hub.textile.io',
       keyInfo: {
         key: 'bfm62iuga3aokfkwat3pyjw7umu',
       },
@@ -152,11 +150,12 @@ export default {
       isModal: false,
     }
   },
+
   computed: {
     ...mapState(['selectedAccount']),
   },
 
-  async mounted() {
+  mounted() {
     const webcamElement = this.$refs.webcam
     const canvasElement = this.$refs.canvas
     this.camera = new this.$webcam(webcamElement, 'user', canvasElement)
@@ -174,18 +173,8 @@ export default {
       momintABI,
       MOMINT_CONTRACT_ADDRESS
     )
+
     console.log(this.momint)
-    console.log('here')
-    // this.identity = await this.getIdentity()
-    // this.client = await this.getClient()
-    // await this.listThreads()
-
-    // await this.createThread()
-
-    // await this.createCollectionFromSchema()
-
-    // await this.getAllData()
-    // await this.addNewData()
 
     this.isLoading = false
   },
@@ -195,129 +184,8 @@ export default {
       this.camera.stop()
     }
   },
-  /**
-   * getIdentity uses a basic private key identity.
-   * The user's identity will be cached client side. This is long
-   * but ephemeral storage not sufficient for production apps.
-   *
-   * Read more here:
-   * https://docs.textile.io/tutorials/hub/libp2p-identities/
-   */
+
   methods: {
-    getIdentity() {
-      try {
-        const storedIdent = localStorage.getItem('identity')
-        if (storedIdent === null) {
-          throw new Error('No identity')
-        }
-        const restored = PrivateKey.fromString(storedIdent)
-        return restored
-      } catch (e) {
-        /**
-         * If any error, create a new identity.
-         */
-        try {
-          const identity = PrivateKey.fromRandom()
-          const identityString = identity.toString()
-          localStorage.setItem('identity', identityString)
-          return identity
-        } catch (err) {
-          return err.message
-        }
-      }
-    },
-
-    async getClient() {
-      if (!this.identity) {
-        throw new Error('Identity not set')
-      }
-      const client = await Client.withKeyInfo(this.keyInfo)
-      console.log('Key Info', client)
-      await client.getToken(this.identity)
-      return client
-    },
-
-    async listThreads() {
-      if (!this.identity) {
-        throw new Error('Identity not set')
-      }
-      const threads = (await this.client.listThreads()) || []
-      console.log(threads)
-      const lastThread = threads[threads.length - 1 ? threads.length - 1 : 0]
-      console.log(lastThread)
-      this.threadId = lastThread.id
-      console.log(this.threadId)
-      // this.threadId = threads.id
-    },
-
-    async createThread() {
-      if (!this.client) {
-        throw new Error('Client not set')
-      }
-      const thread = await this.client.newDB()
-      this.threadId = thread.toString()
-      console.log(this.threadId)
-    },
-
-    async createCollectionFromSchema() {
-      if (!this.client) {
-        throw new Error('Client not set')
-      }
-      if (!this.threadId) {
-        throw new Error('No DB yet')
-      }
-      console.log(this.threadId)
-      await this.client.newCollection(ThreadID.fromString(this.threadId), {
-        name: 'UserMoments1',
-        schema: this.schema,
-      })
-    },
-
-    async getAllData() {
-      if (!this.client) {
-        throw new Error('Client not set')
-      }
-      if (!this.threadId) {
-        throw new Error('No DB yet')
-      }
-      console.log(this.threadId)
-      const found = await this.client.find(
-        ThreadID.fromString(this.threadId),
-        'UserMoments1',
-        {}
-      )
-      console.log('found:', found)
-      this.allMintedPics = found
-    },
-
-    async addNewData(metadata) {
-      if (!this.client) {
-        throw new Error('Client not set')
-      }
-      if (!this.threadId) {
-        throw new Error('No DB yet')
-      }
-      console.log(this.threadId)
-      const fruits = ['Apple', 'Orange', 'Banana']
-      const created = await this.client.create(
-        ThreadID.fromString(this.threadId),
-        'UserMoments1',
-        [
-          {
-            _id: '' + Date.now(),
-            address: this.selectedAccount,
-            URI: metadata.url,
-            description: metadata.data.description,
-            name: metadata.data.name,
-            href: metadata.data.image.href,
-            origin: metadata.data.image.origin,
-            pathname: metadata.data.image.pathname,
-            protocol: metadata.data.image.protocol,
-          },
-        ]
-      )
-      console.log(created)
-    },
     snap() {
       this.picture = this.camera.snap()
       this.snapCaptured = true
@@ -351,8 +219,7 @@ export default {
         description: metadata.data.description,
         image: metadata.data.image,
       })
-      // await this.addNewData(metadata)
-      // await this.getAllData()
+
       await this.mint(metadata)
     },
 
@@ -390,6 +257,7 @@ export default {
         })
       console.log(mint)
     },
+
     modalClosedEvent() {
       console.log('modal closed')
       this.modalText = 'Sending your image on an Interplanetary Mission'

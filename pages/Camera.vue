@@ -273,8 +273,9 @@ export default {
 video {
   width: 100vw;
   min-height: 100vh;
-  margin: 0 auto;
-  position: fixed;
+  margin: auto;
+  position: absolute;
+  object-fit: cover;
   background: black;
   -webkit-transform: scaleX(-1) rotateY(180deg);
   -moz-transform: scaleX(-1) rotateY(180deg);

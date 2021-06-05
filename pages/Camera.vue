@@ -10,7 +10,7 @@
     <canvas v-show="snapCaptured" id="canvas" ref="canvas"></canvas>
     <div class="buttons">
       <NuxtLink to="/">
-        <b-icon icon="backspace" type="is-white" size="is-large"> </b-icon>
+        <b-icon icon="backspace" type="is-white" size="is-medium"> </b-icon>
       </NuxtLink>
 
       <b-icon
@@ -23,7 +23,7 @@
       <b-icon
         icon="camera-flip"
         type="is-white"
-        size="is-large"
+        size="is-medium"
         @click.native="flip"
       >
       </b-icon>
@@ -113,47 +113,20 @@ export default {
       openSeaLink: '',
       etherscanLink: '',
       step: 1,
-      identity: '',
-      client: '',
       isLoading: true,
-      threadId: '',
-      keyInfo: {
-        key: 'bfm62iuga3aokfkwat3pyjw7umu',
-      },
-      keyInfoOptions: {
-        debug: false,
-      },
-      allMintedPics: [],
-      // Define a simple person schema
-      schema: {
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        title: 'UserMoments',
-        type: 'object',
-        properties: {
-          _id: { type: 'string' },
-          address: { type: 'string' },
-          URI: { type: 'string' },
-          description: { type: 'string' },
-          name: { type: 'string' },
-          href: { type: 'string' },
-          origin: { type: 'string' },
-          pathname: { type: 'string' },
-          protocol: { type: 'string' },
-        },
-      },
       snapCaptured: false,
       isModal: false,
     }
-  },
-
-  computed: {
-    ...mapState(['selectedAccount']),
   },
 
   mounted() {
     const webcamElement = this.$refs.webcam
     const canvasElement = this.$refs.canvas
     this.camera = new this.$webcam(webcamElement, 'user', canvasElement)
+    this.momint = new this.$web3.eth.Contract(
+      momintABI,
+      MOMINT_CONTRACT_ADDRESS
+    )
 
     this.camera
       .start()
@@ -163,11 +136,6 @@ export default {
       .catch((err) => {
         console.error(err)
       })
-
-    this.momint = new this.$web3.eth.Contract(
-      momintABI,
-      MOMINT_CONTRACT_ADDRESS
-    )
 
     console.log(this.momint)
 
@@ -202,13 +170,13 @@ export default {
     },
 
     async sendToNftStorage(image) {
+      const today = new Date()
       const metadata = await this.$nftStorageClient.store({
-        name: 'MoMint NFT',
-        description: 'Capture the moment',
+        name: today.toLocaleDateString('en-US'), // 9/17/2016
+        description: String(today),
         image,
       })
-      console.log({ metadata })
-      console.log(metadata.data)
+
       this.$store.commit('pushToNFTCollection', {
         name: metadata.data.name,
         description: metadata.data.description,
@@ -219,18 +187,12 @@ export default {
     },
 
     async mint(metadata) {
-      // if (!this.selectedAccount) {
-      //   return alert('You must connect to MetaMask')
-      // }
-
-      console.log(this.momint)
       const mint = await this.momint.methods
         .mint(metadata.url)
         .send(
           { from: await this.$web3.currentProvider.accounts[0] },
           async (error, result) => {
             if (!error) {
-              console.log(result)
               this.modalText = 'Minting your MoMint...'
               await this.$nextTick()
               this.step = 2
@@ -289,6 +251,7 @@ canvas {
   position: absolute;
   object-fit: cover;
   margin: auto;
+  filter: blur(5px);
 }
 
 .buttons {
@@ -310,7 +273,7 @@ canvas {
 }
 
 .txIcon {
-  height: 100px;
+  height: 75px;
   margin: 10px;
 }
 </style>

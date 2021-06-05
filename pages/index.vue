@@ -55,7 +55,7 @@ export default {
   name: 'HomePage',
 
   computed: {
-    ...mapState(['isConnectDisabled', 'selectedAccount', 'chainId']),
+    ...mapState(['selectedAccount', 'chainId']),
   },
 
   mounted() {

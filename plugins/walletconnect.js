@@ -1,10 +1,13 @@
-import WalletConnectProvider from '@walletconnect/web3-provider'
+import WalletConnect from '@walletconnect/client'
+import QRCodeModal from '@walletconnect/qrcode-modal'
 
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 export default function (context, inject) {
   inject(
-    'walletconnect',
-    new WalletConnectProvider({
-      infuraId: '07c05b5d099c4ad5b5d71ce38fc010e3', // Required
+    'connector',
+    new WalletConnect({
+      bridge: 'https://bridge.walletconnect.org', // Required
+      qrcodeModal: QRCodeModal,
     })
   )
 }

@@ -1,28 +1,28 @@
 <template>
   <section class="section scale-in-center">
-    <div style="display: flex; justify-content: center; align-items: center">
+    <div style="display: flex; justify-content: center; align-items: center;">
       <lottie-player
-        v-show="!images.length"
+        v-show="!gallery.length"
         src="https://assets5.lottiefiles.com/datafiles/vhvOcuUkH41HdrL/data.json"
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 100%; height: 100%"
+        style="width: 100%; height: 100%;"
         loop
         autoplay
       ></lottie-player>
 
-      <h1 v-show="!images.length" class="title">
+      <h1 v-show="!gallery.length" class="title">
         Go ahead and mint some moments!
       </h1>
       <stack
-        v-if="images.length"
+        v-if="gallery.length"
         ref="grid"
         :column-min-width="320"
         :gutter-width="15"
         :gutter-height="15"
       >
-        <stack-item v-for="(image, i) in images" :key="i">
+        <stack-item v-for="(image, i) in gallery" :key="i">
           <img
             :ref="`${image}${i}`"
             :src="image.image.replaceAll('ipfs://', 'https://ipfs.io/ipfs/')"
@@ -42,13 +42,15 @@
 import { mapState } from 'vuex'
 import { Stack, StackItem } from 'vue-stack-grid'
 import LottiePlayer from '@lottiefiles/lottie-player'
+import momintABI from '~/contracts/ABI/ERC721.json'
+import { MOMINT_CONTRACT_ADDRESS } from '~/constants'
 
 export default {
   name: 'Gallery',
   components: { LottiePlayer, Stack, StackItem },
   data() {
     return {
-      images: [],
+      gallery: [],
     }
   },
 
@@ -60,9 +62,45 @@ export default {
     },
   },
 
-  mounted() {
+  async mounted() {
     this.images = this.nftCollection
-    setTimeout(() => this.$refs.grid && this.$refs.grid.update(), 500)
+    setTimeout(() => this.$refs.grid && this.$refs.grid.update(), 1000)
+    this.momint = new this.$web3.eth.Contract(
+      momintABI,
+      MOMINT_CONTRACT_ADDRESS
+    )
+    await this.momint
+      .getPastEvents(
+        'Transfer',
+        {
+          filter: {
+            to: await this.$web3.currentProvider.accounts[0],
+          }, // Using an array means OR: e.g. 20 or 23
+          fromBlock: 0,
+          toBlock: 'latest',
+        },
+        function (error, events) {
+          console.log(events)
+          return events
+        }
+      )
+      .then((events) => {
+        console.log(events)
+        events = events.splice(events.length - 19, events.length - 1)
+        return events.map(async (event) => {
+          console.log(event.returnValues.tokenId)
+          const tokenMetadata = await this.momint.methods
+            .tokenURI(event.returnValues.tokenId)
+            .call()
+          const JSONMetadata = await this.$axios.get(
+            tokenMetadata.replaceAll('ipfs://', 'https://ipfs.io/ipfs/')
+          )
+          const image = JSONMetadata.data.image
+          const name = JSONMetadata.data.name
+          const desc = JSONMetadata.data.description
+          this.gallery.push({ image, name, desc })
+        })
+      })
   },
 }
 </script>

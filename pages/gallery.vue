@@ -61,6 +61,7 @@ export default {
   },
 
   mounted() {
+    this.images = this.nftCollection
     setTimeout(() => this.$refs.grid && this.$refs.grid.update(), 500)
   },
 }

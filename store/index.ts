@@ -1,16 +1,13 @@
 import { ActionTree, MutationTree } from 'vuex'
 import ENS, { getEnsAddress } from '@ensdomains/ensjs'
-import VuexPersistence from 'vuex-persist'
+// import VuexPersistence from 'vuex-persist'
+import detectEthereumProvider from '@metamask/detect-provider'
 
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
 
-const stringifyState = (state: any) => {
-  return JSON.stringify({ ...state })
-}
-
-const syncStateToStorage = (state: any) => {
-  if (state.selectedAccount !== null) {
-    localStorage.setItem(state.selectedAccount, stringifyState(state))
+export const resetWalletConnector = (connector: WalletConnectConnector) => {
+  if (connector && connector.walletConnectProvider?.wc?.uri) {
+    connector.walletConnectProvider = undefined
   }
 }
 
@@ -32,9 +29,9 @@ export const getDefaultState = () => ({
 
 export type RootState = ReturnType<typeof state>
 
-const vuexLocal = new VuexPersistence<RootState>({
-  storage: window.localStorage,
-})
+// const vuexLocal = new VuexPersistence<RootState>({
+//   storage: window.localStorage,
+// })
 
 export const mutations: MutationTree<RootState> = {
   resetState(state) {
@@ -57,7 +54,6 @@ export const mutations: MutationTree<RootState> = {
     nft
   ) {
     state.nftCollection = state.nftCollection.concat([nft])
-    syncStateToStorage(state)
   },
   removeFromNFTCollectionByIndex(state, index) {
     state.nftCollection.splice(index, 1)
@@ -71,7 +67,7 @@ export const actions: ActionTree<RootState, RootState> = {
     console.log(address)
 
     const ens = await new ENS({
-      provider: this.app.$web3.currentProvider,
+      provider: await detectEthereumProvider(),
       ensAddress: getEnsAddress(4),
     })
 
@@ -86,11 +82,9 @@ export const actions: ActionTree<RootState, RootState> = {
     }
   },
   async connectToWallet(context) {
-    console.log('CONTEXT: ', context)
-    console.log('THIS_CONTEXT: ', this)
     const { accounts, chainId, connected } = await this.app.$web3
-      .currentProvider
-    console.log('CONNECTED ?: ', connected)
+      .currentProvider.wc
+
     if (connected && chainId !== 4) {
       return Snackbar.open({
         message: 'Please connect to Rinkeby',
@@ -111,20 +105,20 @@ export const actions: ActionTree<RootState, RootState> = {
     }
 
     try {
-      if (!this.app.$web3.currentProvider.connected) {
-        console.log('Setting provider')
-        await this.app.$web3.currentProvider.enable()
+      if (!this.app.$web3.currentProvider.wc.connected) {
+        const item = await this.app.$web3.currentProvider.wc.createSession()
+        console.log(item)
       }
     } catch (error) {
       console.error(error)
     }
   },
-  disconnectWallet() {
-    if (this.app.$web3.currentProvider.connected) {
+  async disconnectWallet() {
+    if (this.app.$web3.currentProvider.wc.connected) {
       console.log('DISCONNECT')
-      this.app.$web3.currentProvider.disconnect()
+      await this.app.$web3.currentProvider.wc.killSession()
     }
   },
 }
 
-export const plugins = [vuexLocal.plugin]
+// export const plugins = [vuexLocal.plugin]

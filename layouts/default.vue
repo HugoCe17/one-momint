@@ -39,9 +39,9 @@ export default {
   watch: {
     selectedAccount: {
       immediate: true,
-      async handler(newAccount, oldAccount) {
-        const { accounts, chainId, connected } = this.$web3.currentProvider
-        if (newAccount !== oldAccount && connected && accounts && chainId) {
+      async handler(newAccount) {
+        const { accounts, chainId, connected } = this.$web3.currentProvider.wc
+        if (connected && accounts && chainId) {
           this.setSelectedAccount(accounts[0])
           await this.$store.dispatch('reverseResolveAddress', newAccount)
         }
@@ -49,10 +49,10 @@ export default {
     },
     chainId: {
       immediate: true,
-      async handler(newChainId, oldChainId) {
-        const { accounts, chainId, connected } = this.$web3.currentProvider
-        if (newChainId !== oldChainId && connected && accounts && chainId) {
-          this.setChainId(chainId)
+      async handler(newChainId) {
+        const { accounts, chainId, connected } = this.$web3.currentProvider.wc
+        if (connected && accounts && chainId) {
+          this.setChainId(newChainId)
           await this.$store.dispatch('reverseResolveAddress', accounts[0])
         }
       },
@@ -60,21 +60,19 @@ export default {
   },
 
   mounted() {
-    this.$web3.currentProvider.on('accountsChanged', (accounts) => {
-      if (accounts) {
-        this.setSelectedAccount(accounts[0])
-        console.log('CONNECTED: ', accounts)
+    this.$web3.currentProvider.wc.on('connect', (error, payload) => {
+      if (error) {
+        return console.error(error)
       }
+      console.log('CONNECTED_PAYLOAD: " ', payload)
+
+      const { accounts, chainId } = payload.params[0]
+      this.setSelectedAccount(accounts[0])
+
+      this.setChainId(chainId)
     })
 
-    this.$web3.currentProvider.on('chainChanged', (chainId) => {
-      if (chainId) {
-        this.setChainId(chainId)
-        console.log('CHAIN_ID: ', chainId)
-      }
-    })
-
-    this.$web3.currentProvider.on('session_update', (error, payload) => {
+    this.$web3.currentProvider.wc.on('session_update', (error, payload) => {
       if (error) {
         return console.error(error)
       }
@@ -85,12 +83,17 @@ export default {
       this.setChainId(chainId)
     })
 
-    this.$web3.currentProvider.on('disconnect', () => {
+    this.$web3.currentProvider.wc.on('disconnect', (code, reason) => {
+      console.log('DISCONNECTED: ', { code, reason })
       this.setSelectedAccount(null)
       this.setChainId(null)
       this.setSelectedAccountEnsName(null)
       this.$router.go(0)
     })
+  },
+
+  destroyed() {
+    this.$web3.currentProvider.removeAllListeners()
   },
 
   methods: {

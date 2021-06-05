@@ -105,7 +105,7 @@ import { MOMINT_CONTRACT_ADDRESS } from '~/constants'
 export default {
   components: { LottiePlayer },
   middleware({ redirect, $web3 }) {
-    if (!$web3.currentProvider.connected) {
+    if (!$web3.currentProvider.wc.connected) {
       redirect('/')
     }
   },

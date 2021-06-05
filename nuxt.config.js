@@ -30,7 +30,7 @@ export default {
     { src: '~/plugins/camera.js', mode: 'client' },
     { src: '~/plugins/vue-particles.js', mode: 'client' },
     { src: '~/plugins/typeit.js', mode: 'client' },
-    { src: '~/plugins/vuex-persist', mode: 'client' },
+    // { src: '~/plugins/vuex-persist', mode: 'client' },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

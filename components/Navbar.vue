@@ -25,7 +25,7 @@
       <b-navbar-item tag="div">
         <div class="buttons">
           <b-button
-            v-if="$web3.currentProvider.connected"
+            v-if="$web3.currentProvider.wc.connected"
             class="is-secondary is-small"
             @click="$store.dispatch('disconnectWallet')"
           >

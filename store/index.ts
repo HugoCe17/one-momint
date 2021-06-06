@@ -84,28 +84,31 @@ export const actions: ActionTree<RootState, RootState> = {
     }
   },
 
-  async connectToWallet({ commit }) {
-    // const { accounts, chainId, connected } = await this.app.$web3
-    //   .currentProvider
+  async connectToWallet({ commit, state }) {
+    console.log(this.app.$web3.currentProvider)
+    if (!this.app.$web3.currentProvider) return
+    const { selectedAddress, chainId } = this.app.$web3.currentProvider
+    console.log('CHAINID: ', chainId)
+    if (Number(chainId) !== 4) {
+      return Snackbar.open({
+        message: 'Please connect to Rinkeby',
+        type: 'is-warning',
+        position: 'is-top',
+      })
+    }
 
-    // if (connected && chainId !== 4) {
-    //   return Snackbar.open({
-    //     message: 'Please connect to Rinkeby',
-    //     type: 'is-warning',
-    //     position: 'is-top',
-    //   })
-    // }
-
-    // if (connected && accounts[0]) {
-    //   return Snackbar.open({
-    //     actionText: 'OK',
-    //     message: `Connected as: \n\n ${accounts[0]} chainId: ${chainId}`,
-    //     type: 'is-success',
-    //     position: 'is-top',
-    //     duration: 6000,
-    //     queue: false,
-    //   })
-    // }
+    if (selectedAddress) {
+      return Snackbar.open({
+        actionText: 'OK',
+        message: `Connected as: \n\n ${selectedAddress} chainId: ${Number(
+          chainId
+        )}`,
+        type: 'is-success',
+        position: 'is-top',
+        duration: 6000,
+        queue: false,
+      })
+    }
 
     try {
       const providerOptions = {
@@ -131,6 +134,16 @@ export const actions: ActionTree<RootState, RootState> = {
 
       console.log('PROVIDER: ', provider)
       await this.app.$web3.setProvider(provider)
+
+      this.app.$web3.eth.extend({
+        methods: [
+          {
+            name: 'chainId',
+            call: 'eth_chainId',
+            outputFormatter: this.app.$web3.utils.hexToNumber,
+          },
+        ],
+      })
 
       if (this.app.$web3.currentProvider) {
         console.log('INIT_EVENTS')

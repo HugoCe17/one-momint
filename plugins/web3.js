@@ -44,5 +44,17 @@ export default async function (context, inject) {
     .then((provider) => provider)
     .catch((error) => console.error(error))
 
-  inject('web3', new Web3(provider))
+  const web3 = new Web3(provider)
+
+  web3.eth.extend({
+    methods: [
+      {
+        name: 'chainId',
+        call: 'eth_chainId',
+        outputFormatter: web3.utils.hexToNumber,
+      },
+    ],
+  })
+
+  inject('web3', web3)
 }

@@ -41,7 +41,8 @@ export default {
       immediate: true,
       async handler(newAccount) {
         if (this.$web3.currentProvider) {
-          const { accounts, chainId, connected } = this.$web3.currentProvider
+          const { accounts, chainId, connected, selectedAddress } =
+            this.$web3.currentProvider
           if (connected && accounts && chainId) {
             this.setSelectedAccount(accounts[0])
             await this.$store.dispatch('reverseResolveAddress', newAccount)

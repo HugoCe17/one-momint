@@ -45,7 +45,7 @@
         </div>
       </div>
     </section>
-    <sponsors />
+    <!-- <sponsors /> -->
   </section>
 </template>
 

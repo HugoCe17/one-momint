@@ -64,11 +64,8 @@ export default {
   },
 
   mounted() {
-    if (this.$web3.currentProvider && this.$web3.currentProvider.wc) {
-      this.$web3.currentProvider.wc.updateSession(
-        this.$web3.currentProvider.wc.session
-      )
-
+    if (this.$web3.currentProvider) {
+      console.log('INIT_EVENTS')
       this.$web3.currentProvider.on('accountsChanged', (accounts) => {
         console.log('ACCOUNTS_CHANGED: ', accounts)
         this.setSelectedAccount(accounts[0])
@@ -87,18 +84,20 @@ export default {
         // this.$router.go(0)
       })
 
-      this.$web3.currentProvider.wc.on('session_update', (error, payload) => {
-        console.log('SESSION_UPDATE')
-        if (error) {
-          console.error(error)
-        }
-        console.log('PAYLOAD: ', payload)
-      })
-
       this.$web3.currentProvider.on('connect', (info) => {
         console.log('ON_CONNECT')
         console.log(info)
       })
+
+      if (this.$web3.currentProvider.wc) {
+        this.$web3.currentProvider.wc.on('session_update', (error, payload) => {
+          console.log('SESSION_UPDATE')
+          if (error) {
+            console.error(error)
+          }
+          console.log('PAYLOAD: ', payload)
+        })
+      }
     }
   },
 

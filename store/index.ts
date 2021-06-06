@@ -132,7 +132,8 @@ export const actions: ActionTree<RootState, RootState> = {
       console.log('PROVIDER: ', provider)
       await this.app.$web3.setProvider(provider)
 
-      if (this.app.$web3.currentProvider && this.app.$web3.currentProvider.wc) {
+      if (this.app.$web3.currentProvider) {
+        console.log('INIT_EVENTS')
         this.app.$web3.currentProvider.on(
           'accountsChanged',
           (accounts: any) => {
@@ -160,17 +161,6 @@ export const actions: ActionTree<RootState, RootState> = {
           }
         )
 
-        this.app.$web3.currentProvider.wc.on(
-          'session_update',
-          (error, payload) => {
-            console.log('SESSION_UPDATE')
-            if (error) {
-              console.error(error)
-            }
-            console.log('PAYLOAD: ', payload)
-          }
-        )
-
         this.app.$web3.currentProvider.on(
           'connect',
           (info: { chainId: number }) => {
@@ -178,6 +168,19 @@ export const actions: ActionTree<RootState, RootState> = {
             console.log(info)
           }
         )
+
+        if (this.app.$web3.currentProvider.wc) {
+          this.app.$web3.currentProvider.wc.on(
+            'session_update',
+            (error: any, payload: any) => {
+              console.log('SESSION_UPDATE')
+              if (error) {
+                console.error(error)
+              }
+              console.log('PAYLOAD: ', payload)
+            }
+          )
+        }
       }
     } catch (error) {
       console.error(error)

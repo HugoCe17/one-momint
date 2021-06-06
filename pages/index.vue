@@ -45,17 +45,22 @@
         </div>
       </div>
     </section>
+    <sponsors />
   </section>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import Sponsors from '~/components/Sponsors.vue'
 
 export default {
   name: 'HomePage',
 
   computed: {
     ...mapState(['selectedAccount', 'chainId']),
+  },
+  components: {
+    Sponsors,
   },
 
   mounted() {

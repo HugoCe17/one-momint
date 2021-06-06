@@ -40,60 +40,70 @@ export default {
     selectedAccount: {
       immediate: true,
       async handler(newAccount) {
-        const { accounts, chainId, connected } = this.$web3.currentProvider
-        if (connected && accounts && chainId) {
-          this.setSelectedAccount(accounts[0])
-          await this.$store.dispatch('reverseResolveAddress', newAccount)
+        if (this.$web3.currentProvider) {
+          const { accounts, chainId, connected } = this.$web3.currentProvider
+          if (connected && accounts && chainId) {
+            this.setSelectedAccount(accounts[0])
+            await this.$store.dispatch('reverseResolveAddress', newAccount)
+          }
         }
       },
     },
     chainId: {
       immediate: true,
       async handler(newChainId) {
-        const { accounts, chainId, connected } = this.$web3.currentProvider
-        if (connected && accounts && chainId) {
-          this.setChainId(newChainId)
-          await this.$store.dispatch('reverseResolveAddress', accounts[0])
+        if (this.$web3.currentProvider) {
+          const { accounts, chainId, connected } = this.$web3.currentProvider
+          if (connected && accounts && chainId) {
+            this.setChainId(newChainId)
+            await this.$store.dispatch('reverseResolveAddress', accounts[0])
+          }
         }
       },
     },
   },
 
   mounted() {
-    this.$web3.currentProvider.wc.on('connect', (error, payload) => {
-      if (error) {
-        return console.error(error)
-      }
-      console.log('CONNECTED_PAYLOAD: " ', payload)
+    if (this.$web3.currentProvider && this.$web3.currentProvider.wc) {
+      this.$web3.currentProvider.wc.updateSession(
+        this.$web3.currentProvider.wc.session
+      )
 
-      const { accounts, chainId } = payload.params[0]
-      this.setSelectedAccount(accounts[0])
+      this.$web3.currentProvider.on('accountsChanged', (accounts) => {
+        console.log('ACCOUNTS_CHANGED: ', accounts)
+        this.setSelectedAccount(accounts[0])
+      })
 
-      this.setChainId(chainId)
-    })
+      this.$web3.currentProvider.on('chainChanged', (chainId) => {
+        console.log('CHAIN_ID_CHANGE: ', chainId)
+        this.setChainId(chainId)
+      })
 
-    this.$web3.currentProvider.wc.on('session_update', (error, payload) => {
-      if (error) {
-        return console.error(error)
-      }
-      console.log('SESSION_UPDATED: ', payload)
+      this.$web3.currentProvider.on('disconnect', (code, reason) => {
+        console.log('DISCONNECTED: ', { code, reason })
+        this.setSelectedAccount(null)
+        this.setChainId(null)
+        this.setSelectedAccountEnsName(null)
+        // this.$router.go(0)
+      })
 
-      const { accounts, chainId } = payload.params[0]
-      this.setSelectedAccount(accounts[0])
-      this.setChainId(chainId)
-    })
+      this.$web3.currentProvider.wc.on('session_update', (error, payload) => {
+        console.log('SESSION_UPDATE')
+        if (error) {
+          console.error(error)
+        }
+        console.log('PAYLOAD: ', payload)
+      })
 
-    this.$web3.currentProvider.wc.on('disconnect', (code, reason) => {
-      console.log('DISCONNECTED: ', { code, reason })
-      this.setSelectedAccount(null)
-      this.setChainId(null)
-      this.setSelectedAccountEnsName(null)
-      this.$router.go(0)
-    })
+      this.$web3.currentProvider.on('connect', (info) => {
+        console.log('ON_CONNECT')
+        console.log(info)
+      })
+    }
   },
 
   destroyed() {
-    this.$web3.currentProvider.removeAllListeners()
+    // this.$web3.currentProvider.removeAllListeners()
   },
 
   methods: {

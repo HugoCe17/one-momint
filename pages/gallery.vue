@@ -1,13 +1,13 @@
 <template>
   <section class="section scale-in-center">
-    <div style="display: flex; justify-content: center; align-items: center;">
+    <div style="display: flex; justify-content: center; align-items: center">
       <lottie-player
         v-show="!gallery.length"
         src="https://assets5.lottiefiles.com/datafiles/vhvOcuUkH41HdrL/data.json"
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 100%; height: 100%;"
+        style="width: 100%; height: 100%"
         loop
         autoplay
       ></lottie-player>
@@ -80,13 +80,16 @@ export default {
           toBlock: 'latest',
         },
         function (error, events) {
+          if (error) {
+            console.log(error)
+          }
           console.log(events)
           return events
         }
       )
       .then((events) => {
         console.log(events)
-        events = events.splice(events.length - 19, events.length - 1)
+        events = events.splice(events.length - 5, events.length - 1)
         return events.map(async (event) => {
           console.log(event.returnValues.tokenId)
           const tokenMetadata = await this.momint.methods

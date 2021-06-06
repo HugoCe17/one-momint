@@ -1,5 +1,8 @@
 <template>
   <section class="section scale-in-center">
+    <h1 v-show="gallery.length" class="is-size-3 has-text-weight-light">
+      {{ this.selectedAccount + "'s Gallery" }}
+    </h1>
     <div
       class="gradani"
       style="display: flex; justify-content: center; align-items: center;"
@@ -18,6 +21,7 @@
       <h1 v-show="!gallery.length" class="title">
         Go ahead and mint some moments!
       </h1>
+
       <div class="container">
         <stack
           v-if="gallery.length"
@@ -26,16 +30,16 @@
           :gutter-width="15"
           :gutter-height="15"
         >
-          <div class="card">
-            <stack-item v-for="(image, i) in gallery" :key="i">
+          <stack-item v-for="(image, i) in gallery" :key="i">
+            <div class="card-image">
               <img
                 :ref="`${image}${i}`"
                 :src="
                   image.image.replaceAll('ipfs://', 'https://ipfs.io/ipfs/')
                 "
               />
-            </stack-item>
-          </div>
+            </div>
+          </stack-item>
         </stack>
       </div>
 

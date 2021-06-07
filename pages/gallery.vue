@@ -166,59 +166,21 @@ export default {
     both;
   animation: scale-in-center 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
-
-.gradani {
-  border: 3px solid;
-  padding: 2em;
-  border-image-slice: 1;
-  border-image-source: linear-gradient(270deg, #246655, #7957d5, #2550dd);
-  -webkit-animation: animationname 30s ease infinite;
-  -moz-animation: animationname 30s ease infinite;
-  -o-animation: animationname 30s ease infinite;
-  animation: animationname 30s ease infinite;
-}
-@-webkit-keyframes animationname {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-@-moz-keyframes animationname {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-@-o-keyframes animationname {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }
 @keyframes animationname {
-  0% {
-    background-position: 0% 50%;
+  to {
+    --angle: 360deg;
   }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+}
+.gradani {
+  border: 20px solid;
+  margin: 1em;
+  border-image-slice: 1;
+  border-image-source: linear-gradient(var(--angle), #246655, #7957d5, #2550dd);
+  animation: animationname 20s ease infinite;
 }
 </style>

@@ -51,58 +51,21 @@ export default {
 img {
   max-height: 400px;
 }
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes animationname {
+  to {
+    --angle: 360deg;
+  }
+}
 .gradani {
   border: 20px solid;
   margin: 1em;
   border-image-slice: 1;
-  border-image-source: linear-gradient(270deg, #246655, #7957d5, #2550dd);
-  -webkit-animation: animationname 30s ease infinite;
-  -moz-animation: animationname 30s ease infinite;
-  -o-animation: animationname 30s ease infinite;
+  border-image-source: linear-gradient(var(--angle), #246655, #7957d5, #2550dd);
   animation: animationname 30s ease infinite;
-}
-@-webkit-keyframes animationname {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-@-moz-keyframes animationname {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-@-o-keyframes animationname {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-@keyframes animationname {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 </style>

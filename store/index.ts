@@ -123,7 +123,7 @@ export const actions: ActionTree<RootState, RootState> = {
       const web3Modal = new Web3Modal({
         network: 'mainnet', // optional
         cacheProvider: false, // optional
-        disableInjectedProvider: false, // optional
+        disableInjectedProvider: true, // optional
         providerOptions, // required
       })
 

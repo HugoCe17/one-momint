@@ -5,7 +5,7 @@
     </h1>
     <div
       class="gradani"
-      style="display: flex; justify-content: center; align-items: center;"
+      style="display: flex; justify-content: center; align-items: center"
     >
       <lottie-player
         v-show="!gallery.length"
@@ -13,7 +13,7 @@
         background="transparent"
         speed="1"
         class="lottie-player"
-        style="width: 100%; height: 100%;"
+        style="width: 100%; height: 100%"
         loop
         autoplay
       ></lottie-player>
@@ -94,6 +94,10 @@ export default {
           toBlock: 'latest',
         },
         function (error, events) {
+          if (error) {
+            console.log(error)
+          }
+
           console.log(events)
           return events
         }
@@ -118,6 +122,7 @@ export default {
   },
 }
 </script>
+
 <style scoped>
 .title {
   font-size: 2rem;
